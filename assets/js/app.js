@@ -1,19 +1,22 @@
-d3.select(window).on("resize", handleResize);
+// d3.select(window).on("resize", handleResize);
 
-// When the browser loads, loadChart() is called
-loadChart();
+// // When the browser loads, loadChart() is called
+// loadChart();
 
-function handleResize() {
-    var svgArea = d3.select("svg");
+// function handleResize() {
+//     var svgArea = d3.select("#chart");
 
-    // If there is already an svg container on the page, remove it and reload the chart
-    if (!svgArea.empty()) {
-        svgArea.remove();
-        loadChart();
-    }
-}
+//     // If there is already an svg container on the page, remove it and reload the chart
+//     if (!svgArea.empty()) {
+//         svgArea.remove();
+//         loadChart();
+//     }
+// }
 
-function loadChart() {
+// function loadChart() {
+    // var svgWidth = parseInt(d3.select('#chart').style('width'), 10);
+    // var svgHeight = parseInt(d3.select('#chart').style("height"),10);
+    // console.log('s',svgWidth,svgHeight)
     var svgWidth = 960;
     var svgHeight = 500;
 
@@ -30,13 +33,14 @@ function loadChart() {
     // // Create an SVG wrapper, append an SVG group that will hold our chart,
     // // and shift the latter by left and top margins.
     var svg = d3
-        .select(".chart")
-        .append("svg")
+        .select("#chart")
+        //.append("svg")
         .attr("width", svgWidth)
         .attr("height", svgHeight);
 
     // // Append an SVG group
     var chartGroup = svg.append("g")
+        .classed('chartGroup', true)
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
     // // Initial Params
@@ -87,42 +91,7 @@ function loadChart() {
         return yAxis;
     }
 
-    // // function used for updating circles group with a transition to
-    // // new circles
-    // function renderCircles(circlesGroup, newXScale, chosenXaxis,newYScale, chosenYaxis) {
-
-    //     circlesGroup.transition()
-    //         .duration(1000)
-    //         .attr("cx", d => newXScale(d[chosenXAxis]));
-
-    //     circlesGroup.transition()
-    //         .duration(1000)
-    //         .attr("cy", d => newYScale(d[chosenYAxis]));
-
-    //     return circlesGroup;
-    // }
-
-    function renderXCircles(circlesGroup, newXScale, chosenXaxis) { // 
-        console.log(circlesGroup, newXScale, chosenXaxis);
-        circlesGroup
-            .transition()
-            .duration(1000)
-            .attr("cx", d => { newXScale(d[chosenXAxis]) });
-
-        return circlesGroup;
-    }
-
-    function renderYCircles(circlesGroup, newYScale, chosenYaxis) { //circlesGroup, 
-        console.log('what is circlesGroup?:', circlesGroup, newYScale, chosenYaxis);
-        circlesGroup
-            .transition()
-            .duration(1000)
-            .attr("cy", d => newYScale(d[chosenYAxis]));
-
-        return circlesGroup;
-    }
-
-    // // function used for updating circles group with new tooltip
+    // function used for updating circles group with new tooltip
     function updateXToolTip(chosenXAxis, circlesGroup) {
 
         switch (chosenXAxis) {
@@ -143,10 +112,10 @@ function loadChart() {
             .attr("class", "tooltip")
             .offset([0, -margin.top * 2])
             .html(function (d) {
-                return (`${label} ${d[value]}`);
+                return (`${d.state}<br>${label} ${d[value]}`);
             });
 
-        var circlesGroup = chartGroup.selectAll("circle")
+        var circlesGroup = chartGroup.selectAll("circle");
 
         circlesGroup.call(toolTip);
 
@@ -196,7 +165,7 @@ function loadChart() {
             .attr("class", "tooltip")
             .offset([0, -margin.top * 2])
             .html(function (d) {
-                return (`${ylabel} ${d[yvalue]}<br>${label} ${d[value]}`);
+                return (`${d.state}<br>${ylabel} ${d[yvalue]}<br>${label} ${d[value]}`);
             });
 
         var circlesGroup = chartGroup.selectAll("circle")
@@ -214,13 +183,10 @@ function loadChart() {
 
         return circlesGroup;
     }
-    //var circlesGroup = chartGroup.selectAll("circle")
 
     // // Retrieve data from the CSV file and execute everything below
     d3.csv("./data/data.csv", function (err, chartData) {
         if (err) throw err;
-
-        //id,state,abbr,poverty,povertyMoe,age,ageMoe,income,incomeMoe,healthcare,healthcareLow,healthcareHigh,obesity,obesityLow,obesityHigh,smokes,smokesLow,smokesHigh,-0.385218228
 
         // parse data
         chartData.forEach(function (data) {
@@ -236,10 +202,6 @@ function loadChart() {
         // xLinearScale function above csv import
         var xLinearScale = xScale(chartData, chosenXAxis);
         var yLinearScale = yScale(chartData, chosenYAxis);
-        // Create y scale function
-        // var yLinearScale = d3.scaleLinear()
-        //     .domain([0, d3.max(chartData, d => d.smokes)])
-        //     .range([height, 0]);
 
         // Create initial axis functions
         var bottomAxis = d3.axisBottom(xLinearScale);
@@ -260,6 +222,7 @@ function loadChart() {
         var circlesGroup = chartGroup.selectAll("circle")
             .data(chartData);
 
+
         //ENTER
         circlesGroup
             .enter()
@@ -269,59 +232,25 @@ function loadChart() {
             .attr("cy", d => yLinearScale(d[chosenYAxis]))
             .attr("r", 20)
             .attr("fill", "lightBlue")
-            .attr("opacity", ".5")
-            .append("svg:text")
-            .classed("circleText", true)
-            .attr("y", d => yLinearScale(d[chosenYAxis]))
-            .attr("x", d => xLinearScale(d[chosenXAxis]))
-            .attr("dx", -10) // padding-right 
-            .attr("dy", ".35em") // vertical-align: middle 
-            .attr("text-anchor", "end") // text-align: right 
-            .attr("text", d => d.abbr);
-        // .append("text")
-        // .attr("y", d => yLinearScale(d[chosenYAxis]))
-        // .attr("x", d => xLinearScale(d[chosenXAxis]))
-        // // .attr("dy", "1em")
-        // // .attr("fill", "black")
-        // .classed("circleText", true)
-        // .text(d => d.abbr)
+            .attr("opacity", ".5");
 
-
-        chartGroup.selectAll("text.circleText")
+        var text = chartGroup.selectAll("text")
             .data(chartData)
             .enter()
-            .append("svg:text")
+            .append("g")
             .classed("circleText", true)
-            .attr("text", d => d.abbr)
-            .attr("y", d => yLinearScale(d[chosenYAxis]))
+            .append("text");
+
+        var textLabels = text
             .attr("x", d => xLinearScale(d[chosenXAxis]))
-            .attr("dx", -10) // padding-right 
-            .attr("dy", ".35em") // vertical-align: middle 
-            .attr("text-anchor", "end"); // text-align: right 
-            
-
-
-            // svg.selectAll("text.label")
-			// 		.data(dataset)
-			// 		.enter().append("text").attr('class','label')
-			// 			.text(function(d) { console.log(d);return d.percentComplete; })
-			// 			.attr("x",function(d) { return xScale(new Date(d.startDate));})
-			// 			.attr("y", function(d) { return (yScale(d.taskName)) + ((h - margin.bottom) / taskCnt)/2 ; })
-			// 			.attr("font-family", "sans-serif")
-			// 			.attr("font-size", "11px")
-			// 			.attr("fill", "white")
-			// 			.attr("text-anchor", "middle");
-
-        // .append('g').attr('class', 'circle')
-        //            .append('circle')
-        //              .attr('cx', function(d) { return xScale(d); })
-        //              .attr('cy', function(d) { return yScale(d); })
-        //            .append('text').attr('style', 'display:none;')
-        //              .text(function(d) { return d.title; })
-        //              .attr('x', function(d) { return xScale(d); })
-        //              .attr('y', function(d) { return yScale(d) + 2*radius(d); });
-
-        console.log('what is circlesGroup', circlesGroup)
+            .attr("y", d => yLinearScale(d[chosenYAxis]))
+            .attr("dy", ".30em")
+            .attr("dx", "-.10em")
+            .text(function (d) { return d.abbr; })
+            .attr("font-family", "sans-serif")
+            .attr("font-size", "10px")
+            .attr("text-anchor", "middle") 
+            .attr("fill", "white");
 
         // Create group for  3 x- axis labels
         var xLabelsGroup = chartGroup.append("g")
@@ -397,8 +326,6 @@ function loadChart() {
                     // updates x axis with transition
                     xAxis = renderXAxes(xLinearScale, xAxis);
 
-                    console.log('circlesGroup is; ', circlesGroup, 'xLineaScale is ;', xLinearScale, 'xAxis is ', xAxis);
-
                     // updates circles with new x values
                     // UPDATE
                     chartGroup.selectAll("circle")
@@ -406,6 +333,13 @@ function loadChart() {
                         .duration(1000)
                         .attr("cx", d => xLinearScale(d[chosenXAxis]))
                         .attr("cy", d => yLinearScale(d[chosenYAxis]))
+
+                    //UPDATE
+                    text
+                        .transition()
+                        .duration(1000)
+                        .attr("x", d => xLinearScale(d[chosenXAxis]))
+                        .attr("y", d => yLinearScale(d[chosenYAxis]))
 
                     // updates tooltips with new info
                     circlesGroup = updateToolTip(chosenXAxis, chosenYAxis);
@@ -474,6 +408,13 @@ function loadChart() {
                         .attr("cx", d => xLinearScale(d[chosenXAxis]))
                         .attr("cy", d => yLinearScale(d[chosenYAxis]))
 
+                    //UPDATE
+                    text
+                        .transition()
+                        .duration(1000)
+                        .attr("x", d => xLinearScale(d[chosenXAxis]))
+                        .attr("y", d => yLinearScale(d[chosenYAxis]))
+
                     // updates tooltips with new info
                     circlesGroup = updateToolTip(chosenXAxis, chosenYAxis);
 
@@ -514,4 +455,4 @@ function loadChart() {
                 }
             });
     });
-}
+// }
